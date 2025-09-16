@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🔥 Real-Time Fire Detection</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #e0f7fa, #ffffff);
+      --text-color: #333;
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --btn-bg: #ffffff;
+      --btn-color: #00796b;
+      --btn-hover-bg: #00796b;
+      --btn-hover-color: #ffffff;
+    }
+
+    body.light-mode {
+      --bg-gradient: linear-gradient(135deg, #f9f9f9, #e0e0e0);
+      --text-color: #333;
+      --card-bg: rgba(255, 255, 255, 0.85);
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      min-height: 100vh;
+      text-align: center;
+      padding: 20px;
+      transition: background 0.5s ease, color 0.5s ease;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      font-size: 2.2rem;
+      color: #00796b;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 15px;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+      background-color: #4CAF50;
+      box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+      animation: pulse 1.5s infinite;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.6; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .video-container {
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 10px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+      width: 400px;
+      height: 250px;
+      overflow: hidden;
+      transition: all 0.5s ease;
+      position: relative;
+      z-index: 1;
+      cursor: pointer;
+    }
+
+    .video-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 2px solid rgba(0,0,0,0.1);
+      transition: all 0.5s ease;
+    }
+
+    /* Fullscreen modal overlay */
+    .fullscreen-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9998;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .fullscreen-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .fullscreen {
+      position: relative;
+      width: 90vw;
+      height: 90vh;
+      border-radius: 0;
+      z-index: 9999;
+    }
+
+    .controls {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn {
+      background: var(--btn-bg);
+      color: var(--btn-color);
+      border: 1px solid #00796b;
+      padding: 10px 25px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+      background: var(--btn-hover-bg);
+      color: var(--btn-hover-color);
+      transform: scale(1.05);
+    }
+
+    footer {
+      margin-top: 20px;
+      font-size: 0.9rem;
+      opacity: 0.85;
+      color: #555;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 1.5rem; }
+      .btn { width: 100%; padding: 12px; }
+      .video-container { width: 90%; height: 200px; }
+    }
+  </style>
+</head>
+<body>
+  <h1>🔥 Real-Time Fire Detection</h1>
+
+  <div class="status">
+    <span class="status-dot" id="statusDot"></span>
+    <span id="statusText">Camera Active</span>
+  </div>
+
+  <div class="video-container" id="videoContainer" onclick="toggleFullscreen()">
+    <img id="videoFeed" src="{{ url_for('video_feed') }}" alt="Fire Detection Feed">
+  </div>
+
+  <!-- Fullscreen Modal Overlay -->
+  <div class="fullscreen-overlay" id="fullscreenOverlay" onclick="exitFullscreen()">
+    <img id="fullscreenVideo" src="{{ url_for('video_feed') }}" class="fullscreen" alt="Fullscreen Feed">
+  </div>
+
+  <div class="controls">
+    <button class="btn" id="toggleBtn" onclick="toggleCamera()">Stop Camera</button>
+    <button class="btn" onclick="toggleTheme()">🌙 Dark/Light Mode</button>
+    <button class="btn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+    <button class="btn" onclick="simulateWarning()">⚠️ Simulate Warning</button>
+  </div>
+
+  <footer>🚨 AI-Powered Fire & Smoke Detection System</footer>
+
+  <script>
+    let cameraOn = true;
+
+    function updateStatus(state) {
+      const statusDot = document.getElementById("statusDot");
+      const statusText = document.getElementById("statusText");
+
+      switch(state) {
+        case "active":
+          statusDot.style.backgroundColor = "#4CAF50";
+          statusDot.style.boxShadow = "0 0 10px rgba(76, 175, 80, 0.5)";
+          statusText.textContent = "Camera Active";
+          break;
+        case "warning":
+          statusDot.style.backgroundColor = "#FFC107";
+          statusDot.style.boxShadow = "0 0 10px rgba(255, 193, 7, 0.5)";
+          statusText.textContent = "Camera Warning";
+          break;
+        case "inactive":
+          statusDot.style.backgroundColor = "#CCC";
+          statusDot.style.boxShadow = "0 0 10px rgba(0,0,0,0.2)";
+          statusText.textContent = "Camera Inactive";
+          break;
+      }
+    }
+
+    function toggleCamera() {
+      if(cameraOn) updateStatus("inactive");
+      else updateStatus("active");
+      cameraOn = !cameraOn;
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle("light-mode");
+    }
+
+    function toggleFullscreen() {
+      const overlay = document.getElementById("fullscreenOverlay");
+      overlay.classList.toggle("active");
+    }
+
+    function exitFullscreen() {
+      const overlay = document.getElementById("fullscreenOverlay");
+      overlay.classList.remove("active");
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") exitFullscreen();
+    });
+
+    function simulateWarning() {
+      updateStatus("warning");
+      setTimeout(() => updateStatus(cameraOn ? "active" : "inactive"), 5000);
+    }
+  </script>
+</body>
+</html>
