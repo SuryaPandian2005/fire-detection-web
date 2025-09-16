@@ -9,28 +9,41 @@ app = Flask(__name__)
 model_path = r"D:\Fire Detction project\model\best.pt"
 model = YOLO(model_path)
 
-# Your video source (webcam or file)
+# Video source (webcam or file)
 cap = cv2.VideoCapture(0)
 
 def generate_frames():
     while True:
-        # Read a frame from the video source
         success, frame = cap.read()
         if not success:
             break
 
-        # Run inference on the frame
-        # The 'model' object handles all preprocessing and postprocessing
+        # Run YOLO inference
         results = model(frame, conf=0.5, verbose=False)
+        annotated_frame = results[0].plot()  # Original annotated frame
 
-        # Get the annotated frame with bounding boxes and labels
-        annotated_frame = results[0].plot()
+        # Check detected objects for fire or smoke
+        detected_labels = results[0].names  # All class names
+        detected_objects = results[0].boxes.cls if len(results[0].boxes) > 0 else []
 
-        # Encode the annotated frame to JPEG format
-        ret, buffer = cv2.imencode('.jpg', annotated_frame)
+        # Overlay a custom message if fire or smoke is detected
+        message = ""
+        for cls_id in detected_objects:
+            label = detected_labels[int(cls_id)]
+            if label.lower() in ["fire", "smoke"]:
+                message = f"⚠ ALERT: {label.upper()} DETECTED!"
+                break  # Show first detected alert
+
+        if message:
+            # Put message on the frame
+            cv2.putText(frame, message, (30, 50), cv2.FONT_HERSHEY_SIMPLEX,
+                        1.2, (0, 0, 255), 3)
+
+        # Encode frame to JPEG
+        ret, buffer = cv2.imencode('.jpg', frame)
         frame_bytes = buffer.tobytes()
 
-        # Yield the frame for streaming
+        # Yield frame for streaming
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
