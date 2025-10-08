@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>📋 Detection Logs | FireDetect AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+  <style>
+    :root {
+      --primary: #00796b;
+      --secondary: #00bfa5;
+      --text-color: #fff;
+      --glass-bg: rgba(255, 255, 255, 0.1);
+      --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #004d40, #26a69a);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.3rem;
+      margin-bottom: 15px;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+
+    p.subtitle { opacity: 0.9; margin-bottom: 40px; font-size: 1rem; }
+
+    .main-section {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 25px;
+      flex-wrap: wrap;
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    .log-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      box-shadow: var(--card-shadow);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      width: 90%;
+      max-width: 700px;
+      padding: 25px;
+      text-align: left;
+      overflow-y: auto;
+      max-height: 350px;
+      transition: all 0.3s;
+    }
+
+    .log-entry {
+      background: rgba(255,255,255,0.1);
+      border-left: 4px solid var(--secondary);
+      padding: 10px 15px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    .log-entry:hover { background: rgba(255,255,255,0.2); }
+
+    .log-entry span.time { font-size: 0.8rem; opacity: 0.7; }
+
+    .no-logs {
+      text-align: center;
+      opacity: 0.7;
+      font-style: italic;
+      margin-top: 20px;
+    }
+
+    #map {
+      width: 90%;
+      max-width: 800px;
+      height: 350px;
+      border-radius: 20px;
+      margin-top: 25px;
+      box-shadow: var(--card-shadow);
+    }
+
+    /* Controls on right side */
+    .controls {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      gap: 15px;
+      height: 350px;
+    }
+
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+    }
+
+    .btn:hover {
+      background: var(--secondary);
+      transform: translateY(-2px);
+    }
+
+    footer {
+      margin-top: 40px;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
+    @media (max-width: 768px) {
+      .main-section { flex-direction: column; align-items: center; }
+      .controls { flex-direction: row; flex-wrap: wrap; justify-content: center; height: auto; }
+      .btn { width: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📋 Fire Detection Logs</h1>
+  <p class="subtitle">Click on a fire log to view its location on the map.</p>
+
+  <div class="main-section">
+    <!-- Logs Section -->
+    <div class="log-card" id="logContainer">
+      <p class="no-logs" id="noLogsText">No fire detected yet.</p>
+    </div>
+
+    <!-- Controls (Right Side) -->
+    <div class="controls">
+      <button class="btn" onclick="loadLogs()">🔄 Refresh Logs</button>
+      <button class="btn" onclick="clearLogs()">🧹 Clear Logs</button>
+      <button class="btn" onclick="downloadExcel()">📥 Download Excel</button>
+      <a href="index.html" class="btn">⬅ Back to surveillance</a>
+    </div>
+  </div>
+
+  <!-- Map Section -->
+  <div id="map"></div>
+
+  <footer>© 2025 FireDetect AI — Detection Log Center</footer>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+  <script>
+    const logContainer = document.getElementById("logContainer");
+    let map = L.map('map').setView([10.9578, 78.0810], 12); // Default center (Chettinad College)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let markers = [];
+
+    function loadLogs() {
+      logContainer.innerHTML = "";
+      const logs = JSON.parse(localStorage.getItem("fireLogsData")) || [];
+
+      if (logs.length === 0) {
+        logContainer.innerHTML = '<p class="no-logs">No fire detected yet.</p>';
+        return;
+      }
+
+      logs.forEach(log => {
+        const div = document.createElement("div");
+        div.className = "log-entry";
+        div.innerHTML = `🚨 ${log.message} <br><span class="time">${log.time}</span>`;
+        div.addEventListener("click", () => {
+          const match = log.message.match(/lat:([\d.-]+),\s*lon:([\d.-]+)/);
+          if (match) {
+            const lat = parseFloat(match[1]);
+            const lon = parseFloat(match[2]);
+            showLocation(lat, lon);
+            speakMessage(`Fire detected at latitude ${lat}, longitude ${lon}`);
+          } else alert("No valid location data in this log.");
+        });
+        logContainer.appendChild(div);
+      });
+    }
+
+    function showLocation(lat, lon) {
+      markers.forEach(m => map.removeLayer(m));
+      markers = [];
+      const marker = L.marker([lat, lon]).addTo(map);
+      marker.bindPopup(`🔥 Fire detected at<br>Lat: ${lat}, Lon: ${lon}`).openPopup();
+      map.setView([lat, lon], 15);
+      markers.push(marker);
+    }
+
+    function speakMessage(text) {
+      const msg = new SpeechSynthesisUtterance(text);
+      msg.lang = "en-US";
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(msg);
+    }
+
+    function clearLogs() {
+      if (confirm("Are you sure you want to clear all logs?")) {
+        localStorage.removeItem("fireLogsData");
+        loadLogs();
+        markers.forEach(m => map.removeLayer(m));
+        markers = [];
+      }
+    }
+
+    function downloadExcel() {
+      const logs = JSON.parse(localStorage.getItem("fireLogsData")) || [];
+      if (logs.length === 0) return alert("No logs to download!");
+      const ws = XLSX.utils.json_to_sheet(logs);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Fire Logs");
+      XLSX.writeFile(wb, "Fire_Detection_Logs.xlsx");
+    }
+
+    loadLogs();
+  </script>
+</body>
+</html>

@@ -4,22 +4,21 @@
   <meta charset="UTF-8">
   <title>🔥 Real-Time Fire Detection</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
   <style>
     :root {
       --bg-gradient: linear-gradient(135deg, #e0f7fa, #ffffff);
       --text-color: #333;
-      --card-bg: rgba(255, 255, 255, 0.85);
+      --card-bg: rgba(255, 255, 255, 0.2);
       --btn-bg: #ffffff;
       --btn-color: #00796b;
       --btn-hover-bg: #00796b;
       --btn-hover-color: #ffffff;
-    }
-
-    body.light-mode {
-      --bg-gradient: linear-gradient(135deg, #f9f9f9, #e0e0e0);
-      --text-color: #333;
-      --card-bg: rgba(255, 255, 255, 0.85);
     }
 
     body {
@@ -28,40 +27,162 @@
       background: var(--bg-gradient);
       color: var(--text-color);
       display: flex;
-      justify-content: center;
-      align-items: center;
       flex-direction: column;
       min-height: 100vh;
       text-align: center;
-      padding: 20px;
+      padding: 10px;
       transition: background 0.5s ease, color 0.5s ease;
-      overflow-x: hidden;
+      position: relative;
+    }
+
+    :root {
+      --main-color: #00796b;
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 230px;
+      height: 100vh;
+      background: var(--main-color);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 20px;
+      z-index: 10000;
+      transition: transform 0.3s ease;
+      transform: translateX(-230px); /* Sidebar starts hidden */
+    }
+
+    body:not(.sidebar-collapsed) .sidebar {
+      transform: translateX(0);
+    }
+
+    .sidebar h2 {
+      margin-bottom: 30px;
+      font-weight: 600;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      width: 100%;
+    }
+
+    .sidebar ul li a {
+      display: block;
+      padding: 12px 20px;
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      transition: 0.3s;
+    }
+
+    .sidebar ul li a:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    /* Toggle Button */
+    .menu-btn {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      font-size: 26px;
+      color: var(--main-color);
+      background: white;
+      border-radius: 8px;
+      padding: 5px 10px;
+      cursor: pointer;
+      z-index: 11000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      transition: 0.3s;
+    }
+
+    .menu-btn:hover {
+      background: var(--main-color);
+      color: white;
+    }
+
+    /* Collapsed Sidebar */
+    body.sidebar-collapsed .sidebar {
+      transform: translateX(-230px);
+    }
+
+    .main-content {
+      margin-left: 230px;
+      padding: 40px 20px;
+      transition: margin-left 0.3s ease;
+    }
+
+    body.sidebar-collapsed .main-content {
+      margin-left: 0;
     }
 
     h1 {
-      margin-bottom: 10px;
-      font-size: 2.2rem;
+      font-size: 2rem;
       color: #00796b;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+      margin-bottom: 15px;
+    }
+
+    .container {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .left-panel, .right-panel {
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(15px);
+      border-radius: 20px;
+      padding: 15px;
+      box-shadow: 0 6px 25px rgba(0,0,0,0.25);
+    }
+
+    .left-panel {
+      flex: 1 1 400px;
+      max-width: 450px;
+    }
+
+    .right-panel {
+      flex: 1 1 400px;
+      max-width: 600px;
+      height: 600px;
+      display: flex;
+      flex-direction: column;
     }
 
     .status {
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 15px;
       font-size: 1rem;
       font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 12px;
+      background: rgba(0,255,0,0.1);
+      border: 1px solid #00ff00;
+      color: #00ff00;
+      font-family: 'Courier New', monospace;
+      text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;
+      box-shadow: 0 0 20px #00ff00, 0 0 40px #00ff00, 0 0 60px #00ff00 inset;
+      margin-bottom: 10px;
+      transition: all 0.3s ease;
     }
 
     .status-dot {
-      width: 12px;
-      height: 12px;
+      width: 14px;
+      height: 14px;
       border-radius: 50%;
       margin-right: 8px;
       background-color: #4CAF50;
       box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
       animation: pulse 1.5s infinite;
-      transition: background-color 0.3s ease, box-shadow 0.3s ease;
     }
 
     @keyframes pulse {
@@ -70,78 +191,46 @@
       100% { transform: scale(1); opacity: 1; }
     }
 
+    .status-warning {
+      color: #ff3333;
+      text-shadow: 0 0 8px #ff3333, 0 0 12px #ff3333;
+      border-color: #ff3333;
+      box-shadow: 0 0 20px #ff3333, 0 0 40px #ff3333, 0 0 60px #ff3333 inset;
+    }
+
     .video-container {
-      background: var(--card-bg);
-      backdrop-filter: blur(10px);
+      width: 100%;
+      height: 260px;
       border-radius: 16px;
-      padding: 10px;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
-      width: 400px;
-      height: 250px;
       overflow: hidden;
-      transition: all 0.5s ease;
-      position: relative;
-      z-index: 1;
-      cursor: pointer;
+      margin-bottom: 10px;
     }
 
     .video-container img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      border-radius: 12px;
-      border: 2px solid rgba(0,0,0,0.1);
-      transition: all 0.5s ease;
-    }
-
-    /* Fullscreen modal overlay */
-    .fullscreen-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: rgba(0, 0, 0, 0.6);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9998;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-
-    .fullscreen-overlay.active {
-      opacity: 1;
-      pointer-events: all;
-    }
-
-    .fullscreen {
-      position: relative;
-      width: 90vw;
-      height: 90vh;
-      border-radius: 0;
-      z-index: 9999;
+      border-radius: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
     }
 
     .controls {
-      margin-top: 15px;
       display: flex;
+      justify-content: center;
       gap: 10px;
       flex-wrap: wrap;
-      justify-content: center;
+      margin-bottom: 10px;
     }
 
     .btn {
       background: var(--btn-bg);
       color: var(--btn-color);
       border: 1px solid #00796b;
-      padding: 10px 25px;
+      padding: 10px 20px;
       font-size: 1rem;
       font-weight: 600;
       border-radius: 30px;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       transition: all 0.3s ease;
     }
 
@@ -151,100 +240,236 @@
       transform: scale(1.05);
     }
 
+    .log-panel {
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(10px);
+      padding: 10px;
+      border-radius: 12px;
+      max-height: 150px;
+      overflow-y: auto;
+      font-size: 0.9rem;
+      text-align: left;
+      margin-bottom: 10px;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+      border-radius: 12px;
+    }
+
     footer {
       margin-top: 20px;
       font-size: 0.9rem;
       opacity: 0.85;
       color: #555;
+      text-align: center;
     }
 
-    @media (max-width: 600px) {
-      h1 { font-size: 1.5rem; }
-      .btn { width: 100%; padding: 12px; }
-      .video-container { width: 90%; height: 200px; }
+    @media (max-width: 900px){
+      .container {
+        flex-direction: column;
+        align-items: center;
+      }
+      .right-panel {
+        height: 400px;
+      }
+    }
+
+    /* Dark mode */
+    body.dark-mode {
+      background: #121212;
+      color: #e0e0e0;
+    }
+
+    body.dark-mode .left-panel,
+    body.dark-mode .right-panel {
+      background: rgba(30,30,30,0.5);
+      color: #e0e0e0;
+    }
+
+    body.dark-mode .log-panel {
+      background: rgba(50,50,50,0.6);
+      color: #e0e0e0;
     }
   </style>
 </head>
-<body>
+
+<!-- Sidebar starts collapsed -->
+<body class="sidebar-collapsed">
+
+  <!-- Menu Button -->
+  <div id="menuToggle" class="menu-btn">☰</div>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar"><br>
+    <h2>🔥 FireDetect</h2>
+    <ul>
+      <li><a href="dash.html">🏠 Dashboard</a></li>
+      <li><a href="log.html">📋 Logs</a></li>
+      <li><a href="set.html">⚙️ Settings</a></li>
+      <li><a href="help.html">❓ Help</a></li>
+    </ul>
+  </div>
+
   <h1>🔥 Real-Time Fire Detection</h1>
 
-  <div class="status">
-    <span class="status-dot" id="statusDot"></span>
-    <span id="statusText">Camera Active</span>
-  </div>
+  <div class="container">
+    <div class="left-panel">
+      <div class="status" id="statusBox">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">Scanning...</span>
+      </div>
 
-  <div class="video-container" id="videoContainer" onclick="toggleFullscreen()">
-    <img id="videoFeed" src="{{ url_for('video_feed') }}" alt="Fire Detection Feed">
-  </div>
+      <div class="video-container">
+        <img id="videoFeed" src="{{ url_for('video_feed') }}" alt="Fire Detection Feed">
+      </div>
 
-  <!-- Fullscreen Modal Overlay -->
-  <div class="fullscreen-overlay" id="fullscreenOverlay" onclick="exitFullscreen()">
-    <img id="fullscreenVideo" src="{{ url_for('video_feed') }}" class="fullscreen" alt="Fullscreen Feed">
-  </div>
+      <div class="controls">
+        <button class="btn" onclick="stopAlarm()">🛑 Stop Alarm</button>
+        <button class="btn" onclick="clearLog()">🧹 Clear Log</button>
+      </div>
 
-  <div class="controls">
-    <button class="btn" id="toggleBtn" onclick="toggleCamera()">Stop Camera</button>
-    <button class="btn" onclick="toggleTheme()">🌙 Dark/Light Mode</button>
-    <button class="btn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
-    <button class="btn" onclick="simulateWarning()">⚠️ Simulate Warning</button>
+      <div class="log-panel" id="logPanel">
+        <strong>📋 Detection Log:</strong><br>
+      </div>
+    </div>
+
+    <div class="right-panel">
+      <div id="map"></div>
+    </div>
   </div>
 
   <footer>🚨 AI-Powered Fire & Smoke Detection System</footer>
 
-  <script>
-    let cameraOn = true;
+  <audio id="alarmSound" src="https://www.soundjay.com/misc/sounds/fire-alarm-1.mp3" preload="auto"></audio>
 
-    function updateStatus(state) {
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <script>
+    let alarmPlaying = false;
+    const logPanel = document.getElementById("logPanel");
+    if(localStorage.getItem("fireLogs")){
+      logPanel.innerHTML += localStorage.getItem("fireLogs");
+    }
+
+    function addLog(message, location = "") {
+  const now = new Date().toLocaleString();
+  const logPanel = document.getElementById("logPanel");
+
+  // Display in current page
+  const entry = `🚨 ${message}${location ? " at " + location : ""} at ${now}<br>`;
+  logPanel.innerHTML += entry;
+  logPanel.scrollTop = logPanel.scrollHeight;
+
+  // Save in structured format for log.html
+  let logs = JSON.parse(localStorage.getItem("fireLogsData")) || [];
+  logs.push({
+    message: `${message}${location ? " at " + location : ""}`,
+    time: now
+  });
+  localStorage.setItem("fireLogsData", JSON.stringify(logs));
+}
+
+
+    function clearLog() {
+      logPanel.innerHTML = "<strong>📋 Detection Log:</strong><br>";
+      localStorage.removeItem("fireLogs");
+    }
+
+    function updateStatus(fire, lat=null, lon=null) {
       const statusDot = document.getElementById("statusDot");
       const statusText = document.getElementById("statusText");
+      const statusBox = document.getElementById("statusBox");
 
-      switch(state) {
-        case "active":
-          statusDot.style.backgroundColor = "#4CAF50";
-          statusDot.style.boxShadow = "0 0 10px rgba(76, 175, 80, 0.5)";
-          statusText.textContent = "Camera Active";
-          break;
-        case "warning":
-          statusDot.style.backgroundColor = "#FFC107";
-          statusDot.style.boxShadow = "0 0 10px rgba(255, 193, 7, 0.5)";
-          statusText.textContent = "Camera Warning";
-          break;
-        case "inactive":
-          statusDot.style.backgroundColor = "#CCC";
-          statusDot.style.boxShadow = "0 0 10px rgba(0,0,0,0.2)";
-          statusText.textContent = "Camera Inactive";
-          break;
+      if(fire) {
+        statusDot.style.backgroundColor = "#FF0000";
+        statusDot.style.boxShadow = "0 0 20px rgba(255, 0, 0, 0.8)";
+        statusText.textContent = "FIRE DETECTED!";
+        statusBox.classList.add("status-warning");
+        startAlarm();
+
+        if(lat && lon){
+          addLog("Fire detected", `lat:${lat}, lon:${lon}`);
+          addFireMarker(lat, lon);
+        }
+      } else {
+        statusDot.style.backgroundColor = "#4CAF50";
+        statusDot.style.boxShadow = "0 0 10px rgba(76, 175, 80, 0.5)";
+        statusText.textContent = "Scanning...";
+        statusBox.classList.remove("status-warning");
+        stopAlarm(false);
       }
     }
 
-    function toggleCamera() {
-      if(cameraOn) updateStatus("inactive");
-      else updateStatus("active");
-      cameraOn = !cameraOn;
+    function startAlarm() {
+      if(alarmPlaying) return;
+      const alarm = document.getElementById("alarmSound");
+      alarm.loop = true;
+      alarm.play();
+      alarmPlaying = true;
+
+      const msg = new SpeechSynthesisUtterance("Warning! Fire detected! Please evacuate immediately!");
+      window.speechSynthesis.speak(msg);
     }
 
-    function toggleTheme() {
-      document.body.classList.toggle("light-mode");
+    function stopAlarm(manual=true) {
+      const alarm = document.getElementById("alarmSound");
+      alarm.pause();
+      alarm.currentTime = 0;
+      alarmPlaying = false;
+
+      if(manual){
+        const statusDot = document.getElementById("statusDot");
+        const statusText = document.getElementById("statusText");
+        const statusBox = document.getElementById("statusBox");
+
+        statusDot.style.backgroundColor = "#4CAF50";
+        statusDot.style.boxShadow = "0 0 10px rgba(76, 175, 80, 0.5)";
+        statusText.textContent = "Scanning...";
+        statusBox.classList.remove("status-warning");
+      }
     }
 
-    function toggleFullscreen() {
-      const overlay = document.getElementById("fullscreenOverlay");
-      overlay.classList.toggle("active");
+    // Leaflet Map
+    const map = L.map('map').setView([0, 0], 2); // start at world view
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let fireMarkers = [];
+    function addFireMarker(lat, lon){
+      const marker = L.marker([lat, lon], {title:"Fire Detected", riseOnHover:true}).addTo(map);
+      marker.bindPopup("🚨 Fire Detected Here!").openPopup();
+      fireMarkers.push(marker);
+      map.setView([lat, lon], 15);
     }
 
-    function exitFullscreen() {
-      const overlay = document.getElementById("fullscreenOverlay");
-      overlay.classList.remove("active");
-    }
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") exitFullscreen();
-    });
-
-    function simulateWarning() {
-      updateStatus("warning");
-      setTimeout(() => updateStatus(cameraOn ? "active" : "inactive"), 5000);
-    }
+    // Poll backend /status every 2 seconds
+    setInterval(async () => {
+      try {
+        const res = await fetch("/status");
+        const data = await res.json();
+        if(!alarmPlaying){
+          if(data.fire && data.lat && data.lon){
+            updateStatus(data.fire, data.lat, data.lon);
+          } else {
+            updateStatus(data.fire);
+          }
+        }
+      } catch(e) {
+        console.error("Failed to fetch status:", e);
+      }
+    }, 2000);
   </script>
+
+  <script>
+    const menuToggle = document.getElementById("menuToggle");
+    menuToggle.addEventListener("click", () => {
+      document.body.classList.toggle("sidebar-collapsed");
+    });
+  </script>
+
 </body>
 </html>

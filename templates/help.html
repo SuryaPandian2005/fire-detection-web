@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>❓ Help Center | FireDetect AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #00796b;
+      --secondary: #00bfa5;
+      --text-color: #fff;
+      --glass-bg: rgba(255, 255, 255, 0.1);
+      --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #004d40, #26a69a);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.3rem;
+      margin-bottom: 15px;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+
+    p.subtitle {
+      opacity: 0.9;
+      margin-bottom: 40px;
+      font-size: 1rem;
+    }
+
+    .card-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+      max-width: 1000px;
+      width: 100%;
+    }
+
+    .card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      box-shadow: var(--card-shadow);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 30px 25px;
+      flex: 1 1 300px;
+      max-width: 320px;
+      transition: transform 0.3s ease, background 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      background: rgba(255,255,255,0.2);
+      animation: glow 1.5s infinite alternate;
+    }
+
+    @keyframes glow {
+      0% { box-shadow: 0 0 10px #00bfa5, 0 0 20px #00bfa5; }
+      50% { box-shadow: 0 0 30px #00bfa5, 0 0 60px #00bfa5; }
+      100% { box-shadow: 0 0 10px #00bfa5, 0 0 20px #00bfa5; }
+    }
+
+    .card h2 {
+      font-size: 1.4rem;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .card p {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      opacity: 0.9;
+      margin-bottom: 15px;
+    }
+
+    .contact-links a,
+    .social-links a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-block;
+      margin: 5px 10px;
+      padding: 8px 14px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.15);
+      transition: background 0.3s;
+    }
+
+    .contact-links a:hover,
+    .social-links a:hover {
+      background: var(--secondary);
+    }
+
+    footer {
+      margin-top: 40px;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
+    .back-btn {
+      margin-top: 30px;
+      display: inline-block;
+      text-decoration: none;
+      color: white;
+      background: var(--primary);
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-weight: 600;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .back-btn:hover {
+      background: var(--secondary);
+      transform: translateY(-3px);
+    }
+
+    @media (max-width: 768px) {
+      .card-container {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>❓ FireDetect Help Center</h1>
+  <p class="subtitle">Need assistance or want to learn more? We’re here to help.</p>
+
+  <div class="card-container">
+    <!-- Card 1: Contact Support -->
+    <div class="card">
+      <h2>📞 Contact Support</h2>
+      <p>Having issues with your fire detection system? Reach out to our support team for help.</p>
+      <div class="contact-links">
+        <a href="mailto:support@firedetect.ai">✉️ Email Us</a>
+        <a href="tel:+1234567890">📱 Call Us</a>
+        <a href="https://firedetect.ai/support" target="_blank">🌐 Support Page</a>
+      </div>
+    </div>
+
+    <!-- Card 2: Follow Us -->
+    <div class="card">
+      <h2>🌐 Follow Us</h2>
+      <p>Stay updated on new features, safety tips, and AI technology improvements.</p>
+      <div class="social-links">
+        <a href="#">🐦 Twitter</a>
+        <a href="#">📘 Facebook</a>
+        <a href="#">📸 Instagram</a>
+        <a href="#">💼 LinkedIn</a>
+      </div>
+    </div>
+
+    <!-- Card 3: Quick Help -->
+    <div class="card">
+      <h2>💡 Quick Help</h2>
+      <p>
+        - Ensure your camera is active.<br>
+        - Allow browser location access.<br>
+        - Check for stable network.<br>
+        - Review logs for past detections.
+      </p>
+      <p>For more FAQs and troubleshooting, visit our support portal.</p>
+    </div>
+  </div>
+
+  <a href="dash.html" class="back-btn">⬅ Back to Dashboard</a>
+
+  <footer>© 2025 FireDetect AI — Smart Fire Safety Assistance</footer>
+
+</body>
+</html>

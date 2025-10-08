@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>⚙️ Settings - Fire Detection System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --main-color: #00796b;
+      --bg-gradient: linear-gradient(135deg, #e0f7fa, #ffffff);
+      --text-color: #333;
+      --card-bg: rgba(255, 255, 255, 0.2);
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-color);
+      min-height: 100vh;
+      transition: 0.3s ease;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 230px;
+      height: 100vh;
+      background: var(--main-color);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 20px;
+      z-index: 10000;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar h2 {
+      margin-bottom: 30px;
+      font-weight: 600;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      width: 100%;
+    }
+
+    .sidebar ul li a {
+      display: block;
+      padding: 12px 20px;
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      transition: 0.3s;
+    }
+
+    .sidebar ul li a:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .menu-btn {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      font-size: 26px;
+      color: var(--main-color);
+      background: white;
+      border-radius: 8px;
+      padding: 5px 10px;
+      cursor: pointer;
+      z-index: 11000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      transition: 0.3s;
+    }
+
+    .menu-btn:hover {
+      background: var(--main-color);
+      color: white;
+    }
+
+    body.sidebar-collapsed .sidebar {
+      transform: translateX(-230px);
+    }
+
+    .main-content {
+      margin-left: 230px;
+      padding: 40px 20px;
+      transition: margin-left 0.3s ease;
+      text-align: center;
+    }
+
+    body.sidebar-collapsed .main-content {
+      margin-left: 0;
+    }
+
+    h1 {
+      color: var(--main-color);
+      font-size: 2rem;
+      margin-bottom: 20px;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+    }
+
+    .settings-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+      background: rgba(255,255,255,0.3);
+      padding: 20px;
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 6px 25px rgba(0,0,0,0.25);
+    }
+
+    .settings-item {
+      width: 100%;
+      text-align: left;
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    input[type="checkbox"], input[type="range"], select {
+      accent-color: var(--main-color);
+      cursor: pointer;
+    }
+
+    .btn {
+      background: white;
+      color: var(--main-color);
+      border: 1px solid var(--main-color);
+      padding: 10px 20px;
+      font-weight: 600;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: 0.3s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn:hover {
+      background: var(--main-color);
+      color: white;
+      transform: scale(1.05);
+    }
+
+    .btn-login {
+      margin-top: 10px;
+      background: var(--main-color);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      font-weight: 600;
+      border-radius: 30px;
+      transition: 0.3s;
+      text-decoration: none;
+    }
+
+    .btn-login:hover {
+      background: #004d40;
+      transform: scale(1.05);
+    }
+
+    footer {
+      margin-top: 30px;
+      color: #555;
+      opacity: 0.85;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar"><br>
+    <h2>🔥 FireDetect</h2>
+    <ul>
+      <li><a href="dash.html">🏠 Dashboard</a></li>
+      <li><a href="log.html">📋 Logs</a></li>
+      <li><a href="set.html">⚙️ Settings</a></li>
+      <li><a href="help.html">❓ Help</a></li>
+      <li><a href="login.html">🔐 Login</a></li>
+    </ul>
+  </div>
+
+  <!-- Menu Button -->
+  <div id="menuToggle" class="menu-btn">☰</div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <h1>⚙️ Settings</h1>
+    <div class="settings-container">
+      <div class="settings-item">
+        <label for="darkMode">🌙 Dark Mode</label>
+        <input type="checkbox" id="darkMode"> Enable Dark Theme
+      </div>
+
+      <div class="settings-item">
+        <label for="volume">🔊 Alarm Volume</label>
+        <input type="range" id="volume" min="0" max="100" value="70">
+      </div>
+
+      <div class="settings-item">
+        <label for="language">🌐 Language</label>
+        <select id="language">
+          <option>English</option>
+          <option>Hindi</option>
+          <option>Spanish</option>
+          <option>French</option>
+        </select>
+      </div>
+
+      <div class="settings-item" style="text-align:center;">
+        <button class="btn" onclick="saveSettings()">💾 Save Settings</button>
+        <a href="login.html" class="btn-login">🔐 Go to Login</a>
+      </div>
+    </div>
+
+    <footer>🚨 AI-Powered Fire Detection System — Settings</footer>
+  </div>
+
+  <script>
+    // Sidebar toggle
+    const menuBtn = document.getElementById("menuToggle");
+    menuBtn.addEventListener("click", () => {
+      document.body.classList.toggle("sidebar-collapsed");
+    });
+
+    function saveSettings() {
+      alert("✅ Settings Saved Successfully!");
+    }
+  </script>
+
+</body>
+</html>
